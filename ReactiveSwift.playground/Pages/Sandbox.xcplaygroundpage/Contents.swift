@@ -101,6 +101,29 @@ performScopedOperation("Good Signal observer", active: false) {
     observer.send(value: "Would expect not to see it again")
 }
 
+performScopedOperation("Difference between observe and on (for Signals)", active: false) {
+    let signal = Signal<String, Never> { observer, lifetime in
+        var i = 1
+        let timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true, block: { _ in
+            observer.send(value: "\(i)")
+            i += 1
+        })
+        lifetime.observeEnded { timer.invalidate() }
+    }
+    .on(value: { print("on value \($0)") })
+
+    RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+
+    print("Will start observing")
+    let disposable = CompositeDisposable()
+    disposable += signal.observeValues { print("observed \($0)") }
+    RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+
+    print("Will stop observing")
+    disposable.dispose()
+    RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+}
+
 performScopedOperation("Difference between start(on:) and observe(on:)", active: false) {
     let (lifetime, token) = Lifetime.make()
     let observationScheduler = QueueScheduler(name: "observationScheduler")
@@ -470,21 +493,6 @@ performScopedOperation("Difference between filter and skip", active: false) {
     // The declaration of skip is `skip(while:)`, meaning it skips only
     // while the closure returns true and then forwards everything.
     // Not the same as filter
-}
-
-performScopedOperation("Difference between observe and on (for Signals)", active: true) {
-    let signal = Signal<String, Never>.init { observer, lifetime in
-        var i = 1
-        let timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
-            observer.send(value: "\(i)")
-            i += 1
-        })
-        lifetime.observeEnded {
-            timer.invalidate()
-        }
-    }
-
-
 }
 
 performScopedOperation("flatMap strategies", active: false) {

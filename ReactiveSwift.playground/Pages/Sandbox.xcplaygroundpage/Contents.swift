@@ -251,6 +251,35 @@ performScopedOperation("Starting a producer twice and really being ok with it", 
         }
 }
 
+performScopedOperation("The SignalProducer of an action is not your Producer", active: true) {
+    struct MyError: Error, CustomStringConvertible {
+        var description: String { return "MyError" }
+    }
+    let enabledState = MutableProperty(false)
+    var willError = true
+    let action: Action<(), Bool, MyError> = .init(enabledIf: enabledState) {
+        SignalProducer<Bool, MyError> { observer, lifetime in
+            if willError {
+                observer.send(error: MyError())
+            } else {
+                observer.send(value: false)
+                observer.sendCompleted()
+            }
+        }
+    }
+
+    let producer: SignalProducer<Bool, ActionError<MyError>> = action.apply()
+        .on(failed: { (error: ActionError<MyError>) in print("Error: \(error)") },
+            value: { print("Value: \($0)") })
+
+    producer.start()
+    enabledState.value = true
+
+    producer.start()
+    willError = false
+    producer.start()
+}
+
 performScopedOperation("Don't use Action as a closure replacement", active: false) {
     // If this is supposed to be inside a CocoaAction then it's OK.
     // Otherwise you should pass a simple closure or, if you want to make sure
@@ -544,3 +573,27 @@ performScopedOperation("flatMap strategies", active: false) {
     testFlatMap(.race, "race: events from the first inner stream that sends an event. Any other in-flight inner streams is disposed of when the winning inner stream is determined.")
 }
 
+performScopedOperation("flatMapping in real life: local cache on a remote stream", active: false) {
+    let valuesFromServer = SignalProducer.timer(interval: .milliseconds(200), on: QueueScheduler())
+        .take(first: 5)
+        .scan([Int]()) { p, _ in p + [p.count] }
+        .on(value: { print("received from server: \($0)") })
+
+    let localCache = MutableProperty([2])
+
+    let filteredValuesFromServer = valuesFromServer.flatMap(.latest) { valuesFromServer -> SignalProducer<([Int], [Int]), Never> in
+        return localCache.producer.map { localCache -> ([Int], [Int]) in
+            (valuesFromServer, valuesFromServer.filter { !localCache.contains($0)  })
+        }
+    }
+
+    filteredValuesFromServer.startWithValues { print("flatMapped value from \($0.0) is: \($0.1)") }
+
+    RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+    print("Adding 0 to cache")
+    localCache.modify { $0 = $0 + [0] }
+
+    RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+    print("Adding 4 to cache")
+    localCache.modify { $0 = $0 + [4] }
+}

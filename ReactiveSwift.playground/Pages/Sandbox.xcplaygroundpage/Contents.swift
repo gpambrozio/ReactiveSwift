@@ -251,7 +251,7 @@ performScopedOperation("Starting a producer twice and really being ok with it", 
         }
 }
 
-performScopedOperation("The SignalProducer of an action is not your Producer", active: true) {
+performScopedOperation("The SignalProducer of an action is not your Producer", active: false) {
     struct MyError: Error, CustomStringConvertible {
         var description: String { return "MyError" }
     }
@@ -372,7 +372,7 @@ performScopedOperation("Even better way to use action in this case", active: fal
     enableDisableAction.apply().start()
 }
 
-performScopedOperation("What to return on an Action", active: true) {
+performScopedOperation("What to return on an Action", active: false) {
     enum MyError: Error { case whatever }
 
     // Dubious of what to check for errors? Should we just check for a `false` value?

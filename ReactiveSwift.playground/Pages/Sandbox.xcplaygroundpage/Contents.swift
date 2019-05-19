@@ -14,9 +14,9 @@
 import ReactiveSwift
 import Foundation
 
-/**********************************************
- These have all been copied from our project
- **********************************************/
+/*:
+ ## These are some extensions copied from our project
+ */
 
 func performScopedOperation(_ description: String, active: Bool = true, _ sideEffect: () throws -> ()) rethrows {
     guard active else { return }
@@ -64,6 +64,11 @@ public struct MtSideEffect {
  
  A place where you can build your sand castles 🏖.
 */
+/*:
+-----------------
+ ## Signal
+-----------------
+ */
 performScopedOperation("Bad Signal observer", active: false) {
     class BadObserver {
         init(_ signal: Signal<String, Never>) {
@@ -143,6 +148,11 @@ performScopedOperation("Difference between start(on:) and observe(on:)", active:
     RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
 }
 
+/*:
+-----------------
+ ## SignalProducer
+-----------------
+ */
 performScopedOperation("SignalProducers don't end when getting out of scope!", active: false) {
     let disposable = CompositeDisposable()
     performScopedOperation("Inner scope") {
@@ -251,6 +261,11 @@ performScopedOperation("Starting a producer twice and really being ok with it", 
         }
 }
 
+/*:
+-----------------
+ ## Action
+-----------------
+ */
 performScopedOperation("The SignalProducer of an action is not your Producer", active: false) {
     struct MyError: Error, CustomStringConvertible {
         var description: String { return "MyError" }
@@ -466,6 +481,11 @@ performScopedOperation("Actions performing their work in the producer", active: 
     logInAndOutAction.apply().start()
 }
 
+/*:
+-----------------
+ ## Property
+-----------------
+ */
 performScopedOperation("Using signal or producer on a Property", active: false) {
     let property = MutableProperty(false)
 
@@ -481,6 +501,11 @@ performScopedOperation("Using signal or producer on a Property", active: false) 
     property.value = false
 }
 
+/*:
+-----------------
+ ## Operators
+-----------------
+ */
 performScopedOperation("Using flatMap when map will do", active: false) {
     let producer = SignalProducer.init(value: "Hello")
 

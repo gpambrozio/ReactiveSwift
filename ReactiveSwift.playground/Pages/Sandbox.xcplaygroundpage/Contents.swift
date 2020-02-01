@@ -622,3 +622,81 @@ performScopedOperation("flatMapping in real life: local cache on a remote stream
     print("Adding 4 to cache")
     localCache.modify { $0 = $0 + [4] }
 }
+
+/*:
+-----------------
+ ## Exercises
+ ### Since this playground doesn't have access to `UIKit` and `ReactiveCocoa` the UI part has to be only imagined... Write the VC solutions in a comment block so the playground still compiles 
+-----------------
+ */
+performScopedOperation("Exercise 1", active: false) {
+    /// You have a state that has 3 possible values: Yes, No and Maybe
+    /// Your UI has a button whose title reflects the current state
+    /// Pressing the button changes the state to the next, cycling back to Yes your from Maybe
+    /// Do it using a MutableProperty for the state
+
+    // Put here what would go in your VM
+
+
+    /* Put here what would go in your VC
+     */
+}
+
+performScopedOperation("Exercise 2", active: false) {
+    /// Same as exercise 1 but using a Property for the state
+
+    // Put here what would go in your VM
+
+
+    /* Put here what would go in your VC
+     */
+}
+
+performScopedOperation("Exercise 3", active: false) {
+    /// You have a state that has 3 possible values: Yes, No and Maybe
+    /// Your UI has 3 buttons, one for each state
+    /// Pressing one of the buttons selects it, unselecting any other
+    /// Do it using a MutableProperty for the state
+
+    // Put here what would go in your VM
+
+
+    /* Put here what would go in your VC
+     */
+}
+
+performScopedOperation("Exercise 4", active: false) {
+    /// Same as exercise 3 but using a Property for the state
+
+    // Put here what would go in your VM
+
+
+    /* Put here what would go in your VC
+     */
+
+
+    /// Part 2: When the user selects "Maybe", the app should do a network
+    /// request to a server (simulated by the Producer below) asking for a
+    /// Yes or No value. Upon reply from the server, select the appropriate
+    /// selector. All selectors must be disabled while the request is pending.
+    /// Also make sure ther user gets feedback if we get a network error
+    struct NetworkError: Error {}
+    let networkRequest = SignalProducer<Bool, NetworkError> { observer, lifetime in
+        guard Bool.random() else {
+            observer.send(error: NetworkError())
+            return
+        }
+        observer.send(value: Bool.random())
+        observer.sendCompleted()
+    }.delay(3, on: QueueScheduler())
+
+    // Put here what would go in your VM
+
+
+    /* Put here what would go in your VC
+     */
+}
+
+performScopedOperation("Exercise 5", active: true) {
+    print("OK")
+}

@@ -66,7 +66,7 @@ private class MutablePropertySubscriber<Input>: Subscriber {
 extension MutableProperty {
     func subject() -> CurrentValueSubject<Value, Never> {
         let subject = CurrentValueSubject<Value, Never>(value)
-        // self IS retained by the subscriber and therefore by the subject. Expected
+        // self IS retained by the subscriber and therefore by the subject. Expected.
         // subject is only weakly retained by `MutablePropertySubscriber` so should not
         // create a retain cycle.
         subject.subscribe(MutablePropertySubscriber(self, subject: subject))
@@ -74,28 +74,32 @@ extension MutableProperty {
     }
 }
 
+func main() {
+    let property = MutableProperty(1)
 
-let property = MutableProperty(1)
-var subject: CurrentValueSubject<Int, Never>? = property.subject()
-weak var weakSubject = subject
+    var subject: CurrentValueSubject<Int, Never>? = property.subject()
+    weak var weakSubject = subject
 
-weakSubject?.value == 1
-var values = [Int]()
-let cancellable = weakSubject?.sink(receiveValue: { (value) in
-    values.append(value)
-})
+    weakSubject?.value == 1
+    var values = [Int]()
+    let cancellable = weakSubject?.sink(receiveValue: { (value) in
+        values.append(value)
+    })
 
-property.value = 2
-weakSubject?.value == 2
-values == [1, 2]
+    property.value = 2
+    weakSubject?.value == 2
+    values == [1, 2]
 
-weakSubject?.value = 3
-property.value ==  3
-values == [1, 2, 3]
+    weakSubject?.value = 3
+    property.value ==  3
+    values == [1, 2, 3]
 
-subject = nil
-cancellable?.cancel()
-weakSubject == nil
+    subject = nil
+    cancellable?.cancel()
 
-cancellable?.cancel()
+    // Unexpected, returns false!
+    weakSubject == nil
+}
+
+main()
 

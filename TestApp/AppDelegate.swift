@@ -101,7 +101,10 @@ extension MutableProperty {
 		// MG: In the labs we proved that subject was 1 here so there is nothing funky with p2.
 		// The leak shows up in the innards of subscribe. We validated and proved using instruments
 		// that there are bunch of leaks here.
+
+		// at this point the retain count of subject is 1
 		subject.subscribe(p2)
+		// now the retain count is 2.
 		return subject
 	}
 }
